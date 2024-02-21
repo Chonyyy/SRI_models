@@ -59,6 +59,7 @@ def testing_model():
     model = Vector_Model(processing_text)
     rels = parse_cran_qrels()
     queries = parse_cran_queries()
+    query_results_vector = 10
     query = queries[0]
     documents = []
     # query =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
@@ -69,7 +70,7 @@ def testing_model():
     for doc in documents:
         model.add_document(doc)
                 
-    ranking = model.get_ranking(query["text"],10,0)
+    ranking = model.get_ranking(query["text"],query_results_vector,0)
     # print(ranking[0][0])
     print(([( doc.doc_name, rank) for doc, rank in ranking ], len(ranking)))
     
@@ -79,8 +80,7 @@ def testing_model():
     RR_vector = 0
     RI_vector = 0
     
-    #for i in range(len(query_results_vector)):
-    for i in range(10):
+    for i in range(query_results_vector):
         if ranking[i][1] == 0:
             continue
         # print(rels[str(int(query["id"]))])
@@ -88,6 +88,7 @@ def testing_model():
         if a.get_doc_id() in rels[str(int(query["id"]))]:
             RR_vector += 1
         RI_vector += 1
+    precision_vector = RR_vector/ (RR_vector + RI_vector)
     
     #recall
     recall_vector = 0
@@ -97,9 +98,9 @@ def testing_model():
     f1_vector = 2 * (precision_vector * recall_vector) / (precision_vector + recall_vector)
 
       
-    print("Precision Vector: " + str(precision_vector) )
-    print("\nRecall Vector: " + str(recall_vector) )
-    print("\nF1 Vector: " + str(f1_vector) )
+    print("\nPrecision Vector: " + str(precision_vector) )
+    print("Recall Vector: " + str(recall_vector) )
+    print("F1 Vector: " + str(f1_vector) )
      
     
 if __name__ == "__main__":
