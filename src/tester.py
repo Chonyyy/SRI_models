@@ -2,14 +2,11 @@ from code.model import Vector_Model
 from code.parser import CranParser
 # from code.document import Document
 
-import re
 from nltk import word_tokenize as tokenize
 from nltk.corpus import stopwords
 import string
 # stemming
 from nltk.stem import PorterStemmer
-import os
-
 
 
 def processing_text(raw_text: str, language: str) -> list[str]:
@@ -77,9 +74,9 @@ def testing_model():
     #calculate the evaluation metrics
     #precision
     precision_vector = 0
-    RR_vector = 0
-    RI_vector = 0
-    
+    RR_vector = 0 #relevantes recuperados tp
+    RI_vector = 0 #resultados recuperados (True Positives + False Positives) para la consulta actual
+    TN_vector = 0
     for i in range(query_results_vector):
         if ranking[i][1] == 0:
             continue
@@ -87,8 +84,14 @@ def testing_model():
         a = ranking[i][0]
         if a.get_doc_id() in rels[str(int(query["id"]))]:
             RR_vector += 1
+        else:
+            TN_vector += 1
+        
         RI_vector += 1
     precision_vector = RR_vector/ (RR_vector + RI_vector)
+    
+    # Calculate the number of false positives (FP) within the top r documents
+    FP_vector = RR_vector - TN_vector
     
     #recall
     recall_vector = 0
@@ -97,10 +100,13 @@ def testing_model():
     #F1
     f1_vector = 2 * (precision_vector * recall_vector) / (precision_vector + recall_vector)
 
-      
+    #fallout
+    fallout = FP_vector / (FP_vector + TN_vector)
+    
     print("\nPrecision Vector: " + str(precision_vector) )
     print("Recall Vector: " + str(recall_vector) )
     print("F1 Vector: " + str(f1_vector) )
+    print(f"Fallout Vector: {fallout}")
      
     
 if __name__ == "__main__":
