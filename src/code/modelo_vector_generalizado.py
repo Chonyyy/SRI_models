@@ -1,7 +1,13 @@
+     
+        
+        
+        
 from typing import Callable
 from code.document import Document
 import numpy as np
 import math
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 class Vector_Model():
 
@@ -33,7 +39,9 @@ class Vector_Model():
         """
         # This acts as a cache for storing the last ranking of a consult, this is in the case of handling result pages
         self.last_ranking: list[tuple[float, int]] = []
-
+        # Inicializar un vectorizador TF-IDF para convertir texto en vectores de alta dimensión
+        self.vectorizer = TfidfVectorizer()
+        
     def get_name(self):
         return "Vector Space Model"
 
@@ -49,19 +57,19 @@ class Vector_Model():
         # tell the model that needs to recalculate the vectors of documents
         self.document_vector_dirty = True
         self.documents.append(document)
-        title = document.doc_normalized_name
-        body = document.doc_normalized_body
-        text = title + body
+        title = ' '.join(document.doc_normalized_name)  # Convertir la lista de palabras en una cadena de texto
+        body = ' '.join(document.doc_normalized_body)  # Convertir la lista de palabras en una cadena de texto
+        text = title + ' ' + body  # Ahora 'text' es una cadena de texto
         term_frequency = self.__get_tf(text)
         # Add the document to the list of documents
         # Update the amount of documents in which the term is
         for token in term_frequency:
             if token in self.df:
-                self.df[token] += 1
+                self.df[token] +=  1
             else:
-                self.df[token] = 1
-            self.tf[(token, len(self.documents) - 1)] = term_frequency[token]
-
+                self.df[token] =  1
+            self.tf[(token, len(self.documents) -  1)] = term_frequency[token]
+            
     def __get_tf(self, text: list[str]) -> dict[str, float]:
         """Generate the normalized term frequency of a text as a dictionary
 
@@ -87,88 +95,32 @@ class Vector_Model():
         return tf
 
     def generate_document_vectors(self):
-        """Generate the document vectors for the model
-        Returns:
-            None: The documents vector are calculated here and stored in the model for later use
-        """
-        if not self.document_vector_dirty:  # If the vectors are already calculated there is no need for recalculation
-            return
-
-        self.document_vector_dirty = False
-        self.document_vectors = []
-
-        for doc_index, doc in enumerate(self.documents):
-            self.document_vectors.append([])
-            for term in (doc.doc_normalized_name + doc.doc_normalized_body):
-                idf: float = math.log(len(self.documents) /
-                             self.df[term])
-                tf: float = 0
-                if (term, doc_index) in self.tf:
-                    tf = self.tf[(term, doc_index)]
-                    self.document_vectors[doc_index].append(
-                        (term, tf * idf))
+         # Convertir todos los documentos en vectores de alta dimensión
+        self.document_vectors = self.vectorizer.fit_transform(
+            [doc.doc_normalized_name + ' ' + doc.doc_normalized_body for doc in self.documents]
+        ).toarray()
 
     def generate_query_vector(self, query: str, lang: str = 'english'):
-        """Return the query vector given a string query and a language for the stemming process
-
-        Args:
-            query (str): This is the text of the query. In this method it's normalized
-            lang (str, optional): The language of the query. Required for the query text processing. Defaults to 'english'.
-
-        Returns:
-            NDArray[float64]: A numpy array representing the query vector
-        """
-        tokenized_query = self.text_processor(query, lang)
-        tf = self.__get_tf(tokenized_query)
-        # for each term in vocabulary calculate its tf in the query
-        a = self.smooth_constant
-
-        query_vector: list[tuple[str, float]] = []
-        for term in tokenized_query:
-            if term in self.df:  # if the term of the query is in the vocabulary
-                document_length = len(self.documents)
-                term_document_frequency = self.df[term]
-                # query_vector.append((term_index,a + (1 + a) * tf[vocabulary[term_index]]) * np.log(document_length / term_document_frequency))
-                query_vector.append((term, (a + (1 - a) * tf[term]) * math.log(
-                    document_length / term_document_frequency)))
+        # Convertir la consulta en un vector de alta dimensión
+        query_vector = self.vectorizer.transform([query]).toarray()
         return query_vector
 
     # [ ]: se escribe similarity
     def similitud(self, vector1: list[tuple[str, float]], vector2: list[tuple[str, float]]) -> float:
-        """Calculate the similitud between two vectors
-
-        Args:
-            vector1 (list[tuple[int,float]]): A list of tuples (term_index, tf * idf)
-            vector2 (list[tuple[int,float]]): A list of tuples (term_index, tf * idf)
-
-        Returns:
-            float: The similitud between the two vectors
-        """
-        dot_product = 0
-        for i in range(len(vector1)):
-            for j in range(len(vector2)):
-                if vector1[i][0] == vector2[j][0]:
-                    dot_product += vector1[i][1] * vector2[j][1]
-                    break
-        norm = math.sqrt(sum([vector1[i][1] ** 2 for i in range(len(vector1))])
-                         ) * sum([vector2[i][1] ** 2 for i in range(len(vector2))])
-        if norm == 0:
-            return 0
-        return dot_product / norm
+        # Calcular la similitud entre dos vectores de alta dimensión
+        return cosine_similarity(vector1.reshape(1, -1), vector2.reshape(1, -1))[0][0]
 
     def get_ranking(self, query: str, first_n_results: int, offset:int = 0, lang: str = 'english'):
+         # Calcular la similitud entre la consulta y cada documento
         self.generate_document_vectors()
         query_vector = self.generate_query_vector(query, lang)
-        doc_rank: list[tuple[float, int]] = []
-        for index, _ in enumerate(self.documents):
-            doc_vector = self.document_vectors[index]
+        doc_rank = []
+        for index, doc_vector in enumerate(self.document_vectors):
             sim = self.similitud(doc_vector, query_vector)
             doc_rank.append((sim, index))
-        self.last_ranking = sorted(
-            doc_rank, key=lambda rank_index: rank_index[0], reverse=True)
+        self.last_ranking = sorted(doc_rank, key=lambda rank_index: rank_index[0], reverse=True)
         return [(self.documents[doc], rank) for rank, doc in self.last_ranking[offset:offset + first_n_results]]
-        return [self.documents[x[1]] for x in self.last_ranking[offset:first_n_results]]
-
+    
     def feedback(self, relevant_docs:list[int]):
         pass
     
@@ -186,6 +138,4 @@ class Vector_Model():
     #TODO: remake this method with binary search
     def get_document_by_id(self, id:int) -> Document:
         return self._get_document_by_id(self.documents, id, 0, len(self.documents) - 1)
-        
-        
-   
+                
