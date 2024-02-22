@@ -72,7 +72,6 @@ def testing_model():
     print(([( doc.doc_name, rank) for doc, rank in ranking ], len(ranking)))
     
     #calculate the evaluation metrics
-    #precision
     precision_vector = 0
     RR_vector = 0 #relevantes recuperados tp
     RI_vector = 0 #resultados recuperados (True Positives + False Positives) para la consulta actual
@@ -92,9 +91,10 @@ def testing_model():
             FP_vector += 1
         
         RI_vector += 1
+    
+    #precision
     precision_vector = RR_vector/ (RR_vector + RI_vector)
     
-
     #recall
     recall_vector = RR_vector / len(rels[str(int(query["id"]))])
 

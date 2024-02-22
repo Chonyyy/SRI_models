@@ -1,7 +1,4 @@
-     
-        
-        
-        
+   
 from typing import Callable
 from code.document import Document
 import numpy as np
@@ -9,13 +6,17 @@ import math
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-class Vector_Model():
+class Vector_Model_G():
 
     def __init__(self, text_processor: Callable[[str, str], list[str]]):
         self.documents:list[Document] = [] 
         self.text_processor = text_processor
         """
         This is the set of all words in the collection of documents
+        """
+        self.tc: dict[tuple[str, int], float] = {}
+        """
+        This is the count of the terms in the doc
         """
         self.tf: dict[tuple[str, int], float] = {}
         """
@@ -42,9 +43,6 @@ class Vector_Model():
         # Inicializar un vectorizador TF-IDF para convertir texto en vectores de alta dimensión
         self.vectorizer = TfidfVectorizer()
         
-    def get_name(self):
-        return "Vector Space Model"
-
     def set_smooth_constant(self, smooth: float):
         """This method is for setting the smooth constant for the query formula
 
@@ -80,13 +78,16 @@ class Vector_Model():
             dict[str, int]: Dictionary where the key is a term and the value is the frequency of the term in the text
         """
         tf: dict[str, float] = { }# Dictionary where the key is a term and the value is the frequency of the term in the document
+        tc: dict[str, float] = { }
         
         max_frequency = 0  # The maximum frequency of a term in the document
         for token in text:
             if token in tf:
                 tf[token] += 1
+                tc[token] += 1
             else:
                 tf[token] = 1
+                tc[token] += 1
             if tf[token] > max_frequency:
                 max_frequency = tf[token]
         # Normalize the term frequency
@@ -99,6 +100,35 @@ class Vector_Model():
         self.document_vectors = self.vectorizer.fit_transform(
             [doc.doc_normalized_name + ' ' + doc.doc_normalized_body for doc in self.documents]
         ).toarray()
+
+    def calculate_minterms(self,vector):
+        minterms = []
+        for vector in self.tc:
+            vector = []
+            for x in vector:
+                if x != 0:
+                    vector.append(1)
+                else:
+                    vector.append(0)
+            if vector not in minterms:
+                minterms.append(vector)
+            vector.clear()
+        return minterms
+                
+        
+    def calculate_coefficients(document_vector, query_vector):
+        coefficients = []
+        for i in range(len(document_vector)):
+            c = sum([document_vector[i][j] * query_vector[j] for j in range(len(document_vector[i]))])
+            coefficients.append(c)
+        return coefficients
+    
+    def calculate_k_vectors(coefficients, independent_vectors):
+        k_vectors = []
+        for i in range(len(coefficients)):
+            k = sum([coefficients[i][j] * independent_vectors[j] for j in range(len(coefficients[i]))])
+            k_vectors.append(k)
+        return k_vectors
 
     def generate_query_vector(self, query: str, lang: str = 'english'):
         # Convertir la consulta en un vector de alta dimensión

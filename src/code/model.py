@@ -6,7 +6,13 @@ import math
 class Vector_Model():
 
     def __init__(self, text_processor: Callable[[str, str], list[str]]):
+        """
+        This is the list of documents
+        """
         self.documents:list[Document] = [] 
+        """
+        This is the processor
+        """
         self.text_processor = text_processor
         """
         This is the set of all words in the collection of documents
@@ -34,9 +40,6 @@ class Vector_Model():
         # This acts as a cache for storing the last ranking of a consult, this is in the case of handling result pages
         self.last_ranking: list[tuple[float, int]] = []
 
-    def get_name(self):
-        return "Vector Space Model"
-
     def set_smooth_constant(self, smooth: float):
         """This method is for setting the smooth constant for the query formula
 
@@ -53,7 +56,7 @@ class Vector_Model():
         body = document.doc_normalized_body
         text = title + body
         term_frequency = self.__get_tf(text)
-        # Add the document to the list of documents
+        
         # Update the amount of documents in which the term is
         for token in term_frequency:
             if token in self.df:
@@ -167,8 +170,7 @@ class Vector_Model():
         self.last_ranking = sorted(
             doc_rank, key=lambda rank_index: rank_index[0], reverse=True)
         return [(self.documents[doc], rank) for rank, doc in self.last_ranking[offset:offset + first_n_results]]
-        return [self.documents[x[1]] for x in self.last_ranking[offset:first_n_results]]
-
+     
     def feedback(self, relevant_docs:list[int]):
         pass
     
