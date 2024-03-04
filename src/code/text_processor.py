@@ -14,7 +14,7 @@ class TextProcessor:
 
     def tokenization_nltk(self):
         #Tokenize the query using NLTK
-        tokenized = [nltk.tokenize.word_tokenize(doc) for doc in self.docs[:10]]
+        tokenized = [nltk.tokenize.word_tokenize(doc) for doc in self.docs]
         return tokenized
          
     def remove_noise_nltk(self, tokenized_docs):
@@ -78,13 +78,18 @@ class TextProcessor:
         else:
             tfidf = gensim.models.TfidfModel(self.corpus)
             self.query_processed.vector_repr = tfidf[self.query_processed.query_bow]
-
+    
     def similarity(self):
         #Find matched documents based on the query
         index = gensim.similarities.MatrixSimilarity(self.vector_repr)
                 
         similarities = index[self.query_processed.vector_repr]
         top_matches = sorted(enumerate(similarities), key=lambda x: -(x[1]))
+        best_match_indices = [match[0] for match in top_matches if match[1]<1e-8]
+        return map(lambda x: self.docs[x],best_match_indices)
+    
+    def retroalimentation(document):
+        pass
 
-        best_match_indices = [match[0] for match in top_matches]
-        return best_match_indices
+    def recomend():
+        return []
