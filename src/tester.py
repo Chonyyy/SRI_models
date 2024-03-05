@@ -73,7 +73,6 @@ def testing_model():
     #calculate the evaluation metrics
     RR = 0
     RI = 0
-    NI = 0
     
     for i in range(len(ranking)):
         if ranking[i][1] == 0:
