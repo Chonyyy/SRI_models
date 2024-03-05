@@ -1,9 +1,10 @@
 import ir_datasets
 import nltk
 import gensim
-from query import Query
+from code.query import Query
 import numpy as np
 import math
+import json
 
 class TextProcessor:
     def __init__(self):
@@ -20,9 +21,18 @@ class TextProcessor:
 
     def tokenization_nltk(self):
         #Tokenize the query using NLTK
-        tokenized = [nltk.tokenize.word_tokenize(doc) for doc in self.docs]
+        a=dict()
+        try:
+            with open('data/feedback.json', 'x') as json_file:
+                json.dump({}, json_file)
+            return [nltk.tokenize.word_tokenize(doc) for doc in self.docs]
+        except FileExistsError:
+            with open("data/feedback.json",'r') as data:
+                a=json.load(data)
+        docs=[d+a[d] if d in a.keys() else d for d in self.docs]
+        tokenized = [nltk.tokenize.word_tokenize(doc) for doc in docs]
         return tokenized
-         
+    
     def remove_noise_nltk(self, tokenized_docs):
         return  [[word.lower() for word in doc if word.isalpha()] for doc in tokenized_docs]
     
@@ -118,6 +128,8 @@ class TextProcessor:
 
 
     def query_processor(self, query, use_bow=True):
+        self.current_query=query
+        self.save(query)
         self.query_processed = Query(query)
         self.query_processed.process_query()
 
@@ -143,9 +155,46 @@ class TextProcessor:
         best_match_indices = [match[0] for match in top_matches if match[1]<1e-8]
         return map(lambda x: self.docs[x],best_match_indices)
     
-    def retroalimentation(document):
-        pass
-
-        best_match_indices = [match[0] for match in top_matches]
-        return best_match_indices
+    def feedback(self,document):
+        a=dict()
+        try:
+            with open('data/feedback.json', 'x') as json_file:
+                json.dump({document:self.current_query}, json_file)
+            return
+        except FileExistsError:
+            with open("data/feedback.json",'r') as data:
+                a=json.load(data)
+        if document in a:
+            a[document]+='\n'+self.current_query
+        else:
+            a[document]=self.current_query
+        with open('data/feedback.json','w') as data:
+            json.dump(a,data)
+    
+    def save(self,query):
+        a=''
+        try:
+            with open('data/recomendation.json', 'x') as json_file:
+                json.dump(query, json_file)
+            return
+        except FileExistsError:
+            with open("data/recomendation.json",'r') as data:
+                a=json.load(data)
+        a+=' '+query
+        with open('data/recomendation.json','w') as data:
+            json.dump(a,data)
+    
+    def recomend(self):
+        a=''
+        try:
+            with open('data/recomendation.json', 'x') as json_file:
+                json.dump("", json_file)
+            return self.docs
+        except:
+            a=''
+        with open("data/recomendation.json",'r') as data:
+            a=json.load(data)
+        tp=TextProcessor()
+        tp.query_processor(a)
+        return tp.similarity()
     
