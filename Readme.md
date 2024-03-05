@@ -3,7 +3,7 @@
 
 1. María de Lourdes Choy Fernández C412
 2. Javier Rodríguez Sánchez C411
-3. Jorge Alberto Aspiolea C411
+3. Jorge Alberto Aspiolea C412
 
 ## Modelo SRI implementado
 
@@ -15,7 +15,7 @@ Consideramos tener en cuenta el contenido impartido en conferencias.
 
 ## Cómo ejecutar el proyecto
 
-Bla bla
+python3 src/gui.py
 
 ## Explicación de la solución desarrollada
 
