@@ -16,7 +16,7 @@ class TextProcessor:
         self.tokenized_docs = self.filter_tokens_by_occurrence(self.morphological_reduction_nltk(self.remove_stopwords(self.remove_noise_nltk(self.tokenization_nltk()))))
         self.vocabulary = list(self.dictionary.token2id.keys())
         self.vector_repr = self.vector_representation(self.tokenized_docs, self.dictionary)
-        # self.vector_repr = self.generalize(self.vector_repr)
+        self.vector_repr = self.generalize(self.vector_repr)
 
     def tokenization_nltk(self):
         #Tokenize the query using NLTK
@@ -132,7 +132,7 @@ class TextProcessor:
             tfidf = gensim.models.TfidfModel(self.corpus)
             self.query_processed.vector_repr = tfidf[self.query_processed.query_bow]
 
-        # self.query_processed.vector_repr = self.generalize(self.query_processed.vector_repr, query=True)
+        self.query_processed.vector_repr = self.generalize(self.query_processed.vector_repr, query=True)
 
     def similarity(self):
         #Find matched documents based on the query
@@ -140,16 +140,12 @@ class TextProcessor:
                 
         similarities = index[self.query_processed.vector_repr]
         top_matches = sorted(enumerate(similarities), key=lambda x: -(x[1]))
+        best_match_indices = [match[0] for match in top_matches if match[1]<1e-8]
+        return map(lambda x: self.docs[x],best_match_indices)
+    
+    def retroalimentation(document):
+        pass
 
         best_match_indices = [match[0] for match in top_matches]
         return best_match_indices
     
-proc = TextProcessor()
-
-# print('akkakaka')
-# print('-----------------------------')
-# proc.query_processor('free-stream mach number and the impact and free-stream pressures and densities for extremely low pressures .it is shown that the results differ appreciably from the corresponding continuum relations')
-
-# print(proc.similarity())
-
-# print(proc.docs[969])
