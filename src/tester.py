@@ -56,7 +56,6 @@ def testing_model():
     model = Vector_Model(processing_text)
     rels = parse_cran_qrels()
     queries = parse_cran_queries()
-    query_results_vector = 10
     query = queries[0]
     documents = []
     # query =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
@@ -67,31 +66,27 @@ def testing_model():
     for doc in documents:
         model.add_document(doc)
                 
-    ranking = model.get_ranking(query["text"],query_results_vector,0)
-    # print(ranking[0][0])
+    ranking = model.get_ranking(query["text"],10,0)
+
     print(([( doc.doc_name, rank) for doc, rank in ranking ], len(ranking)))
     
     #calculate the evaluation metrics
-
-    precision = 0
-    RR = 0 
+    RR = 0
     RI = 0
     NI = 0
     
-    for i in range(query_results_vector):
+    for i in range(len(ranking)):
         if ranking[i][1] == 0:
             continue
-        # print(rels[str(int(query["id"]))])
+        
         a = ranking[i][0]
         if a.get_doc_id() in rels[str(int(query["id"]))]:
             RR += 1
         else:
             RI += 1
         
-        RI += 1
     NR =  len(rels[str(int(query["id"]))]) - RR
-    #total doc irrelevantes - RI
-    NI = (len(documents)-len(rels[str(int(query["id"]))])) - RI
+    NI = (len(documents)-len(rels[str(int(query["id"]))])) - RI  
 
     precision = RR/ (RR + RI)
     recall = RR / (RR + NR)
