@@ -91,7 +91,7 @@ def testing_model():
         RI += 1
     NR =  len(rels[str(int(query["id"]))]) - RR
     #total doc irrelevantes - RI
-    NI = len(documents) - RI
+    NI = (len(documents)-len(rels[str(int(query["id"]))])) - RI
 
     precision = RR/ (RR + RI)
     recall = RR / (RR + NR)
