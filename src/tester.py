@@ -1,30 +1,10 @@
-from code.model import Vector_Model
-from code.parser import CranParser
-# from code.document import Document
-
+from code.text_processor import TextProcessor
 from nltk import word_tokenize as tokenize
 from nltk.corpus import stopwords
 import string
 # stemming
 from nltk.stem import PorterStemmer
 
-
-def processing_text(raw_text: str, language: str) -> list[str]:
-    """This method has the propose of processing the text
-    Returns: a List of stemmed and normalized tokens
-    """
-    # raw_text = re.sub(r'[^\w\s]', '', raw_text)
-    res = tokenize(raw_text, language)
-    stop_list = stopwords.words(language) + [*string.punctuation]
-    stemmer = PorterStemmer()
-    return [stemmer.stem(token) for token in res if (token not in stop_list) and len(token) >= 3]
-
-def testing_parser():
-    parser = CranParser(processing_text) 
-    print("hola")
-    with open("data/cran/cran.all.1400","r") as doc:
-        print(parser.parse(doc))
-        
 def parse_cran_qrels():
     qrels = {}
     with open("./data/cran/cranqrel", "r") as f:
@@ -52,40 +32,28 @@ def parse_cran_queries():
 
         
 def testing_model():
-    parser = CranParser(processing_text)
-    model = Vector_Model(processing_text)
+    model = TextProcessor()
     rels = parse_cran_qrels()
     queries = parse_cran_queries()
     query = queries[0]
-    documents = []
     # query =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
     
-    with open("data/cran/cran.all.1400","r") as doc:
-        documents = parser.parse(doc)
-        
-    for doc in documents:
-        model.add_document(doc)
-                
-    ranking = model.get_ranking(query["text"],10,0)
+    model.query_processor(query["text"])
+    ranking=list(model.similarity())           
 
-    print(([( doc.doc_name, rank) for doc, rank in ranking ], len(ranking)))
-    
     #calculate the evaluation metrics
     RR = 0
     RI = 0
     
-    for i in range(len(ranking)):
-        if ranking[i][1] == 0:
-            continue
-        
-        a = ranking[i][0]
-        if a.get_doc_id() in rels[str(int(query["id"]))]:
+    for i in range(len(ranking)):    
+        a = ranking[i]
+        if model.docID[a] in rels[str(int(query["id"]))]:
             RR += 1
         else:
             RI += 1
         
     NR =  len(rels[str(int(query["id"]))]) - RR
-    NI = (len(documents)-len(rels[str(int(query["id"]))])) - RI  
+    NI = (len(model.docs)-len(rels[str(int(query["id"]))])) - RI  
 
     precision = RR/ (RR + RI)
     recall = RR / (RR + NR)
@@ -100,5 +68,3 @@ def testing_model():
     
 if __name__ == "__main__":
     testing_model()
-    
-

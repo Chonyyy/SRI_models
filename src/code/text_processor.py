@@ -12,6 +12,9 @@ class TextProcessor:
         self.corpus = []
         dataset = ir_datasets.load("cranfield")
         self.docs = [doc.text for doc in dataset.docs_iter()]
+        self.docID=dict()
+        for i in range(len(self.docs)):
+            self.docID[self.docs[i]]=i
         del self.docs[470]
         del self.docs[993]
         self.tokenized_docs = self.filter_tokens_by_occurrence(self.morphological_reduction_nltk(self.remove_stopwords(self.remove_noise_nltk(self.tokenization_nltk()))))
@@ -127,9 +130,10 @@ class TextProcessor:
         return new_vectors
 
 
-    def query_processor(self, query, use_bow=True):
+    def query_processor(self, query, use_bow=True, Save=True):
         self.current_query=query
-        self.save(query)
+        if Save:
+            self.save(query)
         self.query_processed = Query(query)
         self.query_processed.process_query()
 
@@ -152,7 +156,7 @@ class TextProcessor:
                 
         similarities = index[self.query_processed.vector_repr]
         top_matches = sorted(enumerate(similarities), key=lambda x: -(x[1]))
-        best_match_indices = [match[0] for match in top_matches if match[1]<1e-8]
+        best_match_indices = [match[0] for match in top_matches if match[1]>1e-8]
         return map(lambda x: self.docs[x],best_match_indices)
     
     def feedback(self,document):
@@ -194,7 +198,6 @@ class TextProcessor:
             a=''
         with open("data/recomendation.json",'r') as data:
             a=json.load(data)
-        tp=TextProcessor()
-        tp.query_processor(a)
-        return tp.similarity()
+        self.query_processor(a,Save=False)
+        return self.similarity()
     
