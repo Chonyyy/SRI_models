@@ -17,7 +17,7 @@ Modelo Vector Generalizado.
 
 ## Cómo ejecutar el proyecto
 
-pyton3 src/gui.py
+python3 src/gui.py
 
 ## Explicación de la solución desarrollada
 
