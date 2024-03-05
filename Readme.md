@@ -123,3 +123,6 @@ A continuación se explica como se calcula estas:
 
 ----------------------------------------------------------------------------
 
+- El preprocesamiento se realiza cada vez que se inicia el programa, una mejora es realizar dicho preprocesamiento una única vez y guardar los valores en archivos json
+- El procesamiento de la query demora mucho, es un problema característico del modelo vector generalizado
+- Debido a las consideraciones de implementación, la precisión del modelo es extremadamente baja. Esto se pudiera solucionar dando la capacidad al usuario de filtrar el número de resultados relevantes
