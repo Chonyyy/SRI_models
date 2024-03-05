@@ -1,10 +1,29 @@
-# Model
 
-## Modelo utilizado
+# Autores
 
-Modelo Vector Generalizado
+1. María de Lourdes Choy Fernández C412
+2. Javier Rodríguez Sánchez C411
+3. Jorge Alberto Aspiolea C411
 
-## Procesamiento de query
+## Modelo SRI implementado
+
+Modelo Vector Generalizado.
+
+## Consideraciones tomadas a la hora de desarrollar la solución
+
+Consideramos tener en cuenta el contenido impartido en conferencias.
+
+## Cómo ejecutar el proyecto
+
+Bla bla
+
+## Explicación de la solución desarrollada
+
+### Colecciones
+
+Las colecciones de documentos de prueba que se usan en el sistema para realizar consultas sobre ellas es la popular colección de Cranfield.
+
+### Procesamiento de query
 
 Explicación de manera general de cómo funciona este proceso:
 
@@ -20,7 +39,7 @@ Explicación de manera general de cómo funciona este proceso:
 
 En resumen, el proceso de preprocesamiento de texto es esencial para preparar el texto para su análisis. Al eliminar el ruido, las palabras vacías y reducir las palabras a su forma base, se facilita la comprensión del texto y se mejora la eficacia de este proyecto.
 
-## Métricas utilizadas
+### Métricas utilizadas
 
 Se calculan varias métricas de evaluación para medir la calidad de la recuperación de información . Estas métricas son importantes para entender cómo el sistema maneja los documentos relevantes e irrelevantes en relación con la consulta de búsqueda. 
 A continuación se explica como se calcula estas:
@@ -40,3 +59,6 @@ A continuación se explica como se calcula estas:
 7. **Cálculo del F1-score (f1):** El F1-score es una medida que combina precisión y recall, y se calcula como el promedio armónico de la precisión y el recall.
 
 8. **Cálculo del fallout (fallout):** El fallout se calcula como la proporción de documentos irrelevantes recuperados (`RI`) en relación con la suma de documentos irrelevantes recuperados (`RI`) y documentos irrelevantes no recuperados (`NI`).
+
+
+## Insuficiencias de la solución y mejoras propuestas.
