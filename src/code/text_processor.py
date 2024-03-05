@@ -92,64 +92,81 @@ class TextProcessor:
         return np.array(lista_de_vectores)
     
     def generalize(self, vectors_weight, query=False):
+        # Inicializa la matriz c con ceros
         c = [[0] * len(self.vector_repr) for _ in range(len(self.vocabulary))]
 
-        vectors = self.generate_independets_vectors()
+        # Obtiene la lista de vectores independientes
+        vectors = self.generate_independents_vectors()
 
+        # Calcula la matriz c
         for i, k in zip(self.vector_repr, range(len(self.vector_repr))):
             for j in i:
                 c[j[0]][k] += j[1]
 
+        # Inicializa la lista de pesos k_i
         k_i = []
         k = 0
+        # Calcula los pesos k_i
         for i in c:
             c_big = 0
-            for j,v in zip(i,vectors):
+            for j, v in zip(i, vectors):
                 k = k + j * v
                 c_big += j ** 2
-            k_i.append((k/math.sqrt(c_big)).tolist())
+            k_i.append((k / math.sqrt(c_big)).tolist())
             k = 0
             c_big = 0
 
+        # Inicializa la lista de nuevos vectores
         new_vectors = []
-        
+        # Si se está procesando una consulta
         if query:
-            for vector in (vectors_weight):
+            # Calcula los nuevos pesos de los términos en la consulta
+            for vector in vectors_weight:
                 new_weight = 0
                 for token in k_i[vector[0]]:  
                     new_weight += vector[1] * token          
                 new_vectors.append((vector[0], new_weight))
-            
+        # Si se está procesando un documento
         else:    
+            # Calcula los nuevos pesos de los términos en cada documento
             for doc in range(len(vectors_weight)):
                 new_tuple = []
                 for vector in vectors_weight[doc]:
                     new_tuple.append((vector[0], k_i[vector[0]][doc] * vector[1]))
                 new_vectors.append(new_tuple)
-        
+
+        # Devuelve la lista de nuevos vectores de palabras generalizados
         return new_vectors
 
 
-    def query_processor(self, query, use_bow=True, Save=True):
-        self.current_query=query
-        if Save:
-            self.save(query)
+    def query_processor(self, query, use_bow=True):
+        # Asigna la consulta actual
+        self.current_query = query
+        # Guarda la consulta
+        self.save(query)
+        # Crea un objeto Query y procesa la consulta
         self.query_processed = Query(query)
         self.query_processed.process_query()
 
+        # Filtra la consulta para incluir solo palabras que están en el diccionario
         filterd_words = [word for _, word in self.dictionary.iteritems()]
         self.query_processed.tokenized_query = [word for word in self.query_processed.tokenized_query if word in filterd_words]
 
+        # Convierte la consulta en una representación vectorial
         self.query_processed.query_bow = self.dictionary.doc2bow(self.query_processed.tokenized_query)
 
+        # Si se debe utilizar el modelo Bag of Words
         if use_bow:
+            # Asigna la representación vectorial de BoW a la consulta
             self.query_processed.vector_repr = self.query_processed.query_bow
+        # Si se debe utilizar el modelo TF-IDF
         else:
+            # Crea un modelo TF-IDF y lo aplica a la consulta
             tfidf = gensim.models.TfidfModel(self.corpus)
             self.query_processed.vector_repr = tfidf[self.query_processed.query_bow]
-
+        # Generaliza la consulta
         self.query_processed.vector_repr = self.generalize(self.query_processed.vector_repr, query=True)
-
+    
     def similarity(self):
         #Find matched documents based on the query
         index = gensim.similarities.MatrixSimilarity(self.vector_repr)

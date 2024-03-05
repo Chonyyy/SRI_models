@@ -3,7 +3,7 @@
 
 1. María de Lourdes Choy Fernández C412
 2. Javier Rodríguez Sánchez C411
-3. Jorge Alberto Aspiolea C411
+3. Jorge Alberto Aspiolea C412
 
 ## Modelo SRI implementado
 
@@ -62,3 +62,61 @@ A continuación se explica como se calcula estas:
 
 
 ## Insuficiencias de la solución y mejoras propuestas.
+
+----------------------------------------------------------------------------
+
+El código proporcionado define una clase `TextProcessor` que se utiliza para procesar y analizar texto en el contexto de un sistema de recuperación de información. La clase realiza varias tareas de preprocesamiento de texto y representación vectorial para preparar los documentos y las consultas para su análisis. Aquí está un desglose de lo que hace cada parte del código:
+
+1. **Inicialización (`__init__`):**
+   - Carga un conjunto de datos llamado "cranfield" utilizando la biblioteca `ir_datasets`.
+   - Elimina dos documentos específicos del conjunto de datos (índices 470 y 993).
+   - Tokeniza, elimina ruido, elimina palabras vacías y realiza una reducción morfológica en los documentos.
+   - Filtra los tokens por su frecuencia de ocurrencia para crear un diccionario y un corpus.
+   - Representa los documentos como vectores utilizando el modelo Bag of Words (BoW) o TF-IDF.
+   - Generaliza los vectores utilizando un método específico para el modelo vectorial generalizado.
+
+2. **Tokenización (`tokenization_nltk`):**
+   - Utiliza la biblioteca NLTK para tokenizar los documentos en palabras individuales.
+   - Intenta crear un archivo `feedback.json` para almacenar retroalimentación de los usuarios, pero si ya existe, carga los datos existentes.
+
+3. **Eliminación de ruido (`remove_noise_nltk`):**
+   - Convierte todas las palabras a minúsculas y elimina las palabras que no son alfabéticas.
+
+4. **Eliminación de palabras vacías (`remove_stopwords`):**
+   - Elimina las palabras vacías del conjunto de palabras en inglés utilizando NLTK.
+
+5. **Reducción morfológica (`morphological_reduction_nltk`):**
+   - Realiza la lematización o el stemming en las palabras tokenizadas, dependiendo de si se utiliza la lematización o no.
+
+6. **Filtrado de tokens (`filter_tokens_by_occurrence`):**
+   - Crea un diccionario de palabras utilizando Gensim y filtra las palabras que aparecen con demasiada frecuencia o muy poco.
+
+7. **Representación vectorial (`vector_representation`):**
+   - Representa los documentos como vectores utilizando el modelo BoW o TF-IDF.
+
+8. **Generación de vectores independientes (`generate_independents_vectors`):**
+   - Genera una lista de vectores independientes que se utilizarán para la generalización.
+
+9. **Generalización (`generalize`):**
+   - Realiza una generalización de los vectores de los documentos o de la consulta utilizando un método específico para el modelo vectorial generalizado.
+
+10. **Procesamiento de consultas (`query_processor`):**
+    - Procesa una consulta dada, la convierte en un vector utilizando el mismo método que los documentos.
+    - Guarda la consulta y la procesa para su posterior uso.
+
+11. **Similitud (`similarity`):**
+    - Calcula la similitud entre la consulta y los documentos utilizando un índice de similitud de Gensim.
+
+12. **Retroalimentación (`feedback`):**
+    - Permite al usuario proporcionar retroalimentación sobre un documento específico.
+
+13. **Guardar (`save`):**
+    - Guarda la consulta actual en un archivo `recomendation.json`.
+
+14. **Recomendar (`recomend`):**
+    - Carga una consulta previa desde `recomendation.json`, procesa la consulta y devuelve los documentos más similares.
+
+El código utiliza varias bibliotecas externas, como `ir_datasets` para cargar conjuntos de datos, `nltk` para el procesamiento de texto, `gensim` para la representación vectorial y la similitud, y `numpy` y `math` para cálculos matemáticos. También utiliza la clase `Query` definida en otro módulo para procesar las consultas.
+
+
+El objetivo principal de esta clase es preparar los documentos y las consultas para su análisis en un sistema de recuperación de información, utilizando técnicas de preprocesamiento de texto y representación vectorial. Esto incluye la tokenización, la eliminación de ruido y palabras vacías, la lematización o el stemming, el filtrado de palabras por frecuencia, y la representación de los documentos como vectores utilizando el modelo BoW o TF-IDF. Además, la clase proporciona métodos para calcular la similitud entre la consulta y los documentos, guardar consultas y proporcionar recomendaciones basadas en la retroalimentación del usuario.
