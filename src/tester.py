@@ -30,17 +30,11 @@ def parse_cran_queries():
                 queries.append(query)
     return queries
 
-        
-def testing_model():
-    model = TextProcessor()
-    rels = parse_cran_qrels()
-    queries = parse_cran_queries()
-    query = queries[0]
-    # query =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
-    
+def metrics(model,rels,query):
     model.query_processor(query["text"])
-    ranking=list(model.similarity())           
-
+    ranking=list(model.similarity())  
+    metric = [] 
+             
     #calculate the evaluation metrics
     RR = 0
     RI = 0
@@ -57,13 +51,47 @@ def testing_model():
 
     precision = RR/ (RR + RI)
     recall = RR / (RR + NR)
-    f1 = 2 * (precision * recall) / (precision + recall)
+    f1 = 2 * (precision * recall) / ((precision + recall)+ 1e-8)
     fallout = RI / (RI + NI)
     
-    print("\nPrecision Vector: " + str(precision) )
-    print("Recall Vector: " + str(recall) )
-    print("F1 Vector: " + str(f1) )
-    print(f"Fallout Vector: {fallout}")
+    metric.append(precision)
+    metric.append(recall)
+    metric.append(f1)
+    metric.append(fallout)
+    
+    print("\nPrecision : " + str(precision) )
+    print("Recall : " + str(recall) )
+    print("F1 : " + str(f1) )
+    print(f"Fallout : {fallout}")
+
+    return metric
+
+        
+def testing_model():
+    rels = parse_cran_qrels()
+    queries = parse_cran_queries()
+    model = TextProcessor()
+
+    list = [0]*4
+    
+    # for i in range(len(queries)):
+    for i in range(10):
+        metrics_query = metrics(model,rels,queries[i])
+        list[0]+=metrics_query[0]
+        list[1]+=metrics_query[1]
+        list[2]+=metrics_query[2]
+        list[3]+=metrics_query[3]
+    
+    list[0] = list[0]/10
+    list[1] = list[1]/10
+    list[2] = list[2]/10
+    list[3] = list[3]/10
+
+    print("MEAN")
+    print("Precision:" + str(list[0]))
+    print("Recall : " + str(list[1] ))
+    print("F1 : " + str(list[2] ))
+    print("Fallout : " + str(list[3]))
      
     
 if __name__ == "__main__":

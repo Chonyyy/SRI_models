@@ -24,15 +24,15 @@ class TextProcessor:
 
     def tokenization_nltk(self):
         #Tokenize the query using NLTK
-        a=dict()
+        added_tokens=dict()
         try:
             with open('data/feedback.json', 'x') as json_file:
                 json.dump({}, json_file)
             return [nltk.tokenize.word_tokenize(doc) for doc in self.docs]
         except FileExistsError:
             with open("data/feedback.json",'r') as data:
-                a=json.load(data)
-        docs=[d+a[d] if d in a.keys() else d for d in self.docs]
+                added_tokens=json.load(data)
+        docs=[d+added_tokens[d] if d in added_tokens.keys() else d for d in self.docs]
         tokenized = [nltk.tokenize.word_tokenize(doc) for doc in docs]
         return tokenized
     
@@ -160,44 +160,44 @@ class TextProcessor:
         return map(lambda x: self.docs[x],best_match_indices)
     
     def feedback(self,document):
-        a=dict()
+        feedback_added=dict()
         try:
             with open('data/feedback.json', 'x') as json_file:
                 json.dump({document:self.current_query}, json_file)
             return
         except FileExistsError:
             with open("data/feedback.json",'r') as data:
-                a=json.load(data)
-        if document in a:
-            a[document]+='\n'+self.current_query
+                feedback_added=json.load(data)
+        if document in feedback_added:
+            feedback_added[document]+='\n'+self.current_query
         else:
-            a[document]=self.current_query
+            feedback_added[document]=self.current_query
         with open('data/feedback.json','w') as data:
-            json.dump(a,data)
+            json.dump(feedback_added,data)
     
     def save(self,query):
-        a=''
+        saved_quey=''
         try:
             with open('data/recomendation.json', 'x') as json_file:
                 json.dump(query, json_file)
             return
         except FileExistsError:
             with open("data/recomendation.json",'r') as data:
-                a=json.load(data)
-        a+=' '+query
+                saved_quey=json.load(data)
+        saved_quey+=' '+query
         with open('data/recomendation.json','w') as data:
-            json.dump(a,data)
+            json.dump(saved_quey,data)
     
     def recomend(self):
-        a=''
+        recomended_query=''
         try:
             with open('data/recomendation.json', 'x') as json_file:
                 json.dump("", json_file)
             return self.docs
         except:
-            a=''
+            recomended_query=''
         with open("data/recomendation.json",'r') as data:
-            a=json.load(data)
-        self.query_processor(a,Save=False)
+            recomended_query=json.load(data)
+        self.query_processor(recomended_query,Save=False)
         return self.similarity()
     
