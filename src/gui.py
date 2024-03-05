@@ -12,7 +12,7 @@ def Gui_run():
 
     def RecomendationsGUI():
         for i in tp.recomend():
-            yield Show(i)
+            yield Show(i,False)
 
     def SearchGUI(query):
     #this function manage the query made by the user
@@ -27,13 +27,13 @@ def Gui_run():
     #Auxiliar GUI Function for select categories
     #-------------------------------------------
 
-    def Show(document):
+    def Show(document,button=True):
     #these method creates the layaut of a document
         layout=[
             [
                 sg.Column([[#This are the plot and the download button
                 sg.Multiline(document,expand_x=True,size=(75,3),no_scrollbar=False),
-                sg.Button('Is relevant?',button_color='Green',key='Relevant\0'+document)
+                sg.Button('Is relevant?',button_color='Green',key='Relevant\0'+document,visible=button)
             ]],justification='r',expand_x=True)]]
         
         return [sg.Frame('',layout=layout,element_justification='c',expand_x=True)]
@@ -97,7 +97,7 @@ def Gui_run():
         if event.__contains__('Relevant'):
         #add the document to Relevants
             document=event.split('\0')[1]
-            tp.retroalimentation(document)
+            tp.feedback(document)
             window2[event].update(button_color='blue', text='Thank you!!!',disabled=True,disabled_button_color=('white','black'))
 
 Gui_run()
