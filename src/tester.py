@@ -56,7 +56,6 @@ def testing_model():
     model = Vector_Model(processing_text)
     rels = parse_cran_qrels()
     queries = parse_cran_queries()
-    query_results_vector = 10
     query = queries[0]
     documents = []
     # query =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
@@ -67,46 +66,35 @@ def testing_model():
     for doc in documents:
         model.add_document(doc)
                 
-    ranking = model.get_ranking(query["text"],query_results_vector,0)
-    # print(ranking[0][0])
+    ranking = model.get_ranking(query["text"],10,0)
+
     print(([( doc.doc_name, rank) for doc, rank in ranking ], len(ranking)))
     
     #calculate the evaluation metrics
-    #precision
-    precision_vector = 0
-    RR_vector = 0 #relevantes recuperados tp
-    RI_vector = 0 #resultados recuperados (True Positives + False Positives) para la consulta actual
-    TN_vector = 0
-    FP_vector = 0
-    recall_vector = 0
+    RR = 0
+    RI = 0
     
-    
-    for i in range(query_results_vector):
+    for i in range(len(ranking)):
         if ranking[i][1] == 0:
             continue
-        # print(rels[str(int(query["id"]))])
+        
         a = ranking[i][0]
         if a.get_doc_id() in rels[str(int(query["id"]))]:
-            RR_vector += 1
+            RR += 1
         else:
-            FP_vector += 1
+            RI += 1
         
-        RI_vector += 1
-    precision_vector = RR_vector/ (RR_vector + RI_vector)
+    NR =  len(rels[str(int(query["id"]))]) - RR
+    NI = (len(documents)-len(rels[str(int(query["id"]))])) - RI  
+
+    precision = RR/ (RR + RI)
+    recall = RR / (RR + NR)
+    f1 = 2 * (precision * recall) / (precision + recall)
+    fallout = RI / (RI + NI)
     
-
-    #recall
-    recall_vector = RR_vector / len(rels[str(int(query["id"]))])
-
-    #F1
-    f1_vector = 2 * (precision_vector * recall_vector) / (precision_vector + recall_vector)
-
-    #fallout
-    fallout = FP_vector / (FP_vector + TN_vector)
-    
-    print("\nPrecision Vector: " + str(precision_vector) )
-    print("Recall Vector: " + str(recall_vector) )
-    print("F1 Vector: " + str(f1_vector) )
+    print("\nPrecision Vector: " + str(precision) )
+    print("Recall Vector: " + str(recall) )
+    print("F1 Vector: " + str(f1) )
     print(f"Fallout Vector: {fallout}")
      
     

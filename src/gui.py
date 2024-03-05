@@ -1,25 +1,23 @@
 import PySimpleGUI as sg
 from itertools import islice
+from code.text_processor import TextProcessor
 
 def Gui_run():
-    #Current categories in database. If the categories changes, you must edit this list
-    #----------------------------------------------------------------------------------
-    
-    
-    
+   
+    tp=TextProcessor()
+
     #--------------------------------------
     #Functions that need to call the engine
     #--------------------------------------
 
     def RecomendationsGUI():
-        return []
-        for i in Recomendations(categories_selected):
+        for i in tp.recomend():
             yield Show(i)
 
     def SearchGUI(query):
     #this function manage the query made by the user
-        return []
-        for i in Search(query,selected_categories):
+        tp.query_processor(query)
+        for i in tp.similarity():
             yield Show(i)
 
     #------------------------------------------
@@ -29,23 +27,16 @@ def Gui_run():
     #Auxiliar GUI Function for select categories
     #-------------------------------------------
 
-    def Show(game):
-    #these method creates the layaut of a videogame
+    def Show(document):
+    #these method creates the layaut of a document
         layout=[
             [
-                sg.Text('year: '), sg.Text(game['year']),
-                sg.Text('rating: '), sg.Text(game['rating']),
-            ] + [
-                #These are the categories of the game
-                sg.Button(cat,font=('Arial',10),disabled=True,disabled_button_color=('black','white')) 
-                    for cat in game['categories']], 
-            [
                 sg.Column([[#This are the plot and the download button
-                sg.Multiline(game['plot'],expand_x=True,size=(75,3),no_scrollbar=False),
-                sg.Button('Download🔽',button_color='Green',key='Download\0'+str(game))
+                sg.Multiline(document,expand_x=True,size=(75,3),no_scrollbar=False),
+                sg.Button('Is relevant?',button_color='Green',key='Relevant\0'+document)
             ]],justification='r',expand_x=True)]]
         
-        return [sg.Frame(game['name'],layout=layout,element_justification='c',expand_x=True)]
+        return [sg.Frame('',layout=layout,element_justification='c',expand_x=True)]
 
 
     sg.theme('Material1')
@@ -89,7 +80,7 @@ def Gui_run():
             break
 
         if event == 'Search':
-        #searches a game based on a query
+        #searches a document based on a query
             if values['query'] == '':
                 continue
             layout = layout_base()+[[sg.Text('Results for: '+values['query'], font=('Helvetica',30),pad=3)]]
@@ -103,10 +94,10 @@ def Gui_run():
             window2=sg.Window('VPN', layout, element_justification='c',finalize=True)
             window2.Maximize()
         
-        if event.__contains__('Download'):
-        #add the game to recomendations
-            name=event.split('\0')[1]
-            #Download(name)
-            window2[event].update(button_color='blue', text='Downloaded',disabled=True,disabled_button_color=('white','black'))
+        if event.__contains__('Relevant'):
+        #add the document to Relevants
+            document=event.split('\0')[1]
+            tp.retroalimentation(document)
+            window2[event].update(button_color='blue', text='Thank you!!!',disabled=True,disabled_button_color=('white','black'))
 
 Gui_run()
