@@ -19,3 +19,10 @@ Explicación de manera general de cómo funciona este proceso:
 5. **Procesamiento de la consulta:** Este es un paso que combina todos los anteriores en un solo proceso. Al llamar a este método, se realiza todo el preprocesamiento de la consulta en un solo paso, lo que facilita el análisis y la búsqueda de información en el texto.
 
 En resumen, el proceso de preprocesamiento de texto es esencial para preparar el texto para su análisis. Al eliminar el ruido, las palabras vacías y reducir las palabras a su forma base, se facilita la comprensión del texto y se mejora la eficacia de este proyecto.
+
+## Métricas utilizadas
+
+1. **Presicion:** 
+2. **Recall :** 
+3. **F1:** 
+4. **Fallout:** 
