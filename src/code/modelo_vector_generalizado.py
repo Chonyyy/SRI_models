@@ -2,9 +2,14 @@
 from typing import Callable
 from code.document import Document
 import numpy as np
-import math
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+"""_summary_
+hay otra opcion x si se nos complica este modelo, 
+Ya se que falta y donde va, estoy buscando la funcion
+y ya entiendo proque no pudiste decirme con precision, tranquila
+    """
 
 class Vector_Model_G():
 
@@ -51,7 +56,7 @@ class Vector_Model_G():
         """
         self.smooth_constant = max(0.1, min(1, smooth))
 
-    def add_document(self, document: Document):
+    def add_document(self, document: Document):#HACE FALTA CORREGIR
         # tell the model that needs to recalculate the vectors of documents
         self.document_vector_dirty = True
         self.documents.append(document)

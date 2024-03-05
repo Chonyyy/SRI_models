@@ -57,21 +57,22 @@ def testing_model():
     rels = parse_cran_qrels()
     queries = parse_cran_queries()
     query_results_vector = 10
-    query = queries[0]
+    query = queries[1]
     documents = []
-    # query =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
+    query_input =  "what similarity laws must be obeyed when constructing aeroelastic models of heated high speed aircraft ."
     
     with open("data/cran/cran.all.1400","r") as doc:
         documents = parser.parse(doc)
         
     for doc in documents:
         model.add_document(doc)
-                
-    ranking = model.get_ranking(query["text"],query_results_vector,0)
+            
+    #query["text"]
+    ranking = model.get_ranking(query_input,query_results_vector,0)
     # print(ranking[0][0])
     print(([( doc.doc_name, rank) for doc, rank in ranking ], len(ranking)))
     
-    #calculate the evaluation metrics
+    # def calculate_evaluation_metrics():
     precision_vector = 0
     RR_vector = 0 #relevantes recuperados tp
     RI_vector = 0 #resultados recuperados (True Positives + False Positives) para la consulta actual
