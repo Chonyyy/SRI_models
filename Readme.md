@@ -15,7 +15,7 @@ Consideramos tener en cuenta el contenido impartido en conferencias.
 
 ## Cómo ejecutar el proyecto
 
-python3 src/gui.py
+pyton3 src/gui.py
 
 ## Explicación de la solución desarrollada
 
@@ -23,7 +23,7 @@ python3 src/gui.py
 
 Las colecciones de documentos de prueba que se usan en el sistema para realizar consultas sobre ellas es la popular colección de Cranfield.
 
-### Procesamiento de query
+### Procesamiento de query (Class `Query`)
 
 Explicación de manera general de cómo funciona este proceso:
 
@@ -38,6 +38,63 @@ Explicación de manera general de cómo funciona este proceso:
 5. **Procesamiento de la consulta:** Este es un paso que combina todos los anteriores en un solo proceso. Al llamar a este método, se realiza todo el preprocesamiento de la consulta en un solo paso, lo que facilita el análisis y la búsqueda de información en el texto.
 
 En resumen, el proceso de preprocesamiento de texto es esencial para preparar el texto para su análisis. Al eliminar el ruido, las palabras vacías y reducir las palabras a su forma base, se facilita la comprensión del texto y se mejora la eficacia de este proyecto.
+
+### Class `TextProcessor`
+
+El objetivo principal de esta clase es preparar los documentos y las consultas para su análisis en el sistema de recuperación de información, utilizando técnicas de preprocesamiento de texto y representación vectorial. Esto incluye la tokenización, la eliminación de ruido y palabras vacías, la lematización o el stemming, el filtrado de palabras por frecuencia, y la representación de los documentos como vectores utilizando el modelo BoW o TF-IDF. Además, la clase proporciona métodos para calcular la similitud entre la consulta y los documentos, guardar consultas y proporcionar recomendaciones basadas en la retroalimentación del usuario.
+
+Aquí está un desglose de lo que hace cada parte del código:
+
+1. **Inicialización (`__init__`):**
+   - Carga un conjunto de datos llamado "cranfield" utilizando la biblioteca `ir_datasets`.
+   - Elimina dos documentos específicos del conjunto de datos (índices 470 y 993).
+   - Tokeniza, elimina ruido, elimina palabras vacías y realiza una reducción morfológica en los documentos.
+   - Filtra los tokens por su frecuencia de ocurrencia para crear un diccionario y un corpus.
+   - Representa los documentos como vectores utilizando el modelo Bag of Words (BoW) o TF-IDF.
+   - Generaliza los vectores utilizando un método específico para el modelo vectorial generalizado.
+
+2. **Tokenización (`tokenization_nltk`):**
+   - Utiliza la biblioteca NLTK para tokenizar los documentos en palabras individuales.
+   - Intenta crear un archivo `feedback.json` para almacenar retroalimentación de los usuarios, pero si ya existe, carga los datos existentes.
+
+3. **Eliminación de ruido (`remove_noise_nltk`):**
+   - Convierte todas las palabras a minúsculas y elimina las palabras que no son alfabéticas.
+
+4. **Eliminación de palabras vacías (`remove_stopwords`):**
+   - Elimina las palabras vacías del conjunto de palabras en inglés utilizando NLTK.
+
+5. **Reducción morfológica (`morphological_reduction_nltk`):**
+   - Realiza la lematización o el stemming en las palabras tokenizadas, dependiendo de si se utiliza la lematización o no.
+
+6. **Filtrado de tokens (`filter_tokens_by_occurrence`):**
+   - Crea un diccionario de palabras utilizando Gensim y filtra las palabras que aparecen con demasiada frecuencia o muy poco.
+
+7. **Representación vectorial (`vector_representation`):**
+   - Representa los documentos como vectores utilizando el modelo BoW o TF-IDF.
+
+8. **Generación de vectores independientes (`generate_independents_vectors`):**
+   - Genera una lista de vectores independientes que se utilizarán para la generalización.
+
+9. **Generalización (`generalize`):**
+   - Realiza una generalización de los vectores de los documentos o de la consulta utilizando un método específico para el modelo vectorial generalizado.
+
+10. **Procesamiento de consultas (`query_processor`):**
+    - Procesa una consulta dada, la convierte en un vector utilizando el mismo método que los documentos.
+    - Guarda la consulta y la procesa para su posterior uso.
+
+11. **Similitud (`similarity`):**
+    - Calcula la similitud entre la consulta y los documentos utilizando un índice de similitud de Gensim.
+
+12. **Retroalimentación (`feedback`):**
+    - Permite al usuario proporcionar retroalimentación sobre un documento específico.
+
+13. **Guardar (`save`):**
+    - Guarda la consulta actual en un archivo `recomendation.json`.
+
+14. **Recomendar (`recomend`):**
+    - Carga una consulta previa desde `recomendation.json`, procesa la consulta y devuelve los documentos más similares.
+
+Se utilizan varias bibliotecas externas, como `ir_datasets` para cargar conjuntos de datos, `nltk` para el procesamiento de texto, `gensim` para la representación vectorial y la similitud, y `numpy` y `math` para cálculos matemáticos. También utiliza la clase `Query` definida en otro módulo para procesar las consultas.
 
 ### Métricas utilizadas
 
@@ -60,5 +117,7 @@ A continuación se explica como se calcula estas:
 
 8. **Cálculo del fallout (fallout):** El fallout se calcula como la proporción de documentos irrelevantes recuperados (`RI`) en relación con la suma de documentos irrelevantes recuperados (`RI`) y documentos irrelevantes no recuperados (`NI`).
 
-
 ## Insuficiencias de la solución y mejoras propuestas.
+
+----------------------------------------------------------------------------
+
