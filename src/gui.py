@@ -91,7 +91,7 @@ def Gui_run():
                     key='scrollable_area',expand_x=True)]]
             
             window2.close()
-            window2=sg.Window('VPN', layout, element_justification='c',finalize=True)
+            window2=sg.Window('SRI', layout, element_justification='c',finalize=True)
             window2.Maximize()
         
         if event.__contains__('Relevant'):
