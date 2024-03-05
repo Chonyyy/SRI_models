@@ -11,7 +11,9 @@ Modelo Vector Generalizado.
 
 ## Consideraciones tomadas a la hora de desarrollar la solución
 
-Consideramos tener en cuenta el contenido impartido en conferencias.
+- Nuestra implementación prioriza el recobrado a la precisión: se evita la pérdida de documentos relevantes a costa de la recuperación de documentos no relevantes.
+- Implementamos un sistema de recomendación de documentos que toma en cuenta el historial de búsqueda del usuario.
+- El modelo cuenta con un sistema de retroalimentación: el usuario puede indicar cuáles son los documentos que resultaron relevantes para su búsqueda.
 
 ## Cómo ejecutar el proyecto
 
