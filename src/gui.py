@@ -11,7 +11,7 @@ def Gui_run():
     #--------------------------------------
 
     def RecomendationsGUI():
-        for i in tp.recomend():
+        for i in tp.recommend():
             yield Show(i,False)
 
     def SearchGUI(query):

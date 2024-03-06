@@ -1,4 +1,6 @@
 import sympy
+import ir_datasets
+import gensim
 
 def query_to_dnf(query):
     '''
@@ -10,9 +12,9 @@ def query_to_dnf(query):
     Returns:
       - string, the boolean query in DNF
     '''
-
+    input()
     operators = ['&', '|', '~','(',')']
-    reserved_Words = ["pass", "use", "field", "harmonic", "maximum", "print", "input", "variations", "pretty", "test"]
+    reserved_Words = query.split()
      
     #add spaces between the brackets 
     query = query.replace('(', ' ( ').replace(')', ' ) ') 
@@ -35,19 +37,17 @@ def query_to_dnf(query):
        return "error"
     
     query_expr = sympy.sympify(processed_query, evaluate=False) 
-    query_dnf = sympy.to_dnf(query_expr, simplify=True, force = True) 
+    query_dnf = sympy.to_dnf(processed_query, simplify=True, force = True) 
     
     return query_dnf 
 
 
-def BooleanModel(query, documents, dictionary):
+def BooleanModel(query):
     '''
     This function is used to search for documents that satisfy a boolean query
 
     Args:
       - query: string, the boolean query
-      - documents: list of strings, the documents to search in
-      - dictionary: gensim.corpora.Dictionary, the dictionary of the documents
 
     Returns:
       - list of integers, the indices of the documents that satisfy the query
@@ -61,7 +61,11 @@ def BooleanModel(query, documents, dictionary):
     terms = Query.split(' | ') 
  
     matching_documents = [] 
- 
+    
+    documents=ir_datasets.load("cranfield")
+    documents=[doc.text for doc in documents.docs_iter()]
+    dictionary=gensim.corpora.Dictionary()
+
     for k, doc in enumerate(documents): 
       for clause in terms: 
         if clause[0] == '(': 
