@@ -1,7 +1,7 @@
 import ir_datasets
 import nltk
 import gensim
-from code.query import Query
+from query import Query
 import numpy as np
 import math
 import json
@@ -119,11 +119,14 @@ class TextProcessor:
             
         else:    
             for doc in range(len(vectors_weight)):
-                new_tuple = []
                 for vector in vectors_weight[doc]:
-                    new_tuple.append((vector[0], k_i[vector[0]][doc] * vector[1]))
+                    new_tuple = []
+                    new_weight = 0
+                    for doc in range(len(vectors_weight)):
+                        new_weight += k_i[vector[0]][doc] * vector[1]
+                    new_tuple.append((vector[0], new_weight))
                 new_vectors.append(new_tuple)
-        
+        print(new_vectors)
         return new_vectors
 
 
@@ -198,3 +201,5 @@ class TextProcessor:
         tp.query_processor(a)
         return tp.similarity()
     
+
+proc = TextProcessor()

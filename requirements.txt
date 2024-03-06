@@ -1,0 +1,5 @@
+nltk==3.8.1
+PySimpleGUI==5.0.2
+gensim==4.3.2
+numpy==1.26.4
+ir_datasets==0.5.6
