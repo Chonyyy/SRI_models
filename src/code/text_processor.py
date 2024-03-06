@@ -1,3 +1,16 @@
+"""
+This module provides classes and functions for text processing and information retrieval tasks.
+
+Attributes:
+    None
+
+Classes:
+    TextProcessor: A class for processing text documents and queries for information retrieval.
+
+Functions:
+    None
+"""
+
 import ir_datasets
 import nltk
 import gensim
@@ -7,7 +20,24 @@ import math
 import json
 
 class TextProcessor:
+    """
+    A class for processing text documents and queries for information retrieval.
+
+    Attributes:
+        dictionary (gensim.corpora.Dictionary): A dictionary mapping tokens to unique integer ids.
+        corpus (list): A list of documents represented as bag-of-words vectors.
+        docs (list): A list of text documents.
+        tokenized_docs (list): A list of tokenized documents.
+        vocabulary (list): A list of unique tokens in the corpus.
+        vector_repr (list): A list of vector representations of documents.
+        current_query (str): The current query being processed.
+        query_processed (Query): An instance of the Query class for processing queries.
+    """
+
     def __init__(self):
+        """
+        Initializes a TextProcessor object.
+        """
         self.dictionary = {}
         self.corpus = []
         dataset = ir_datasets.load("cranfield")
@@ -20,29 +50,62 @@ class TextProcessor:
         self.vector_repr = self.generalize(self.vector_repr)
 
     def tokenization_nltk(self):
-        #Tokenize the query using NLTK
-        a=dict()
+        """
+        Tokenizes the documents using NLTK tokenizer.
+
+        Returns:
+            list: A list of tokenized documents.
+        """
+        a = dict()
         try:
             with open('data/feedback.json', 'x') as json_file:
                 json.dump({}, json_file)
-            return [nltk.tokenize.word_tokenize(doc) for doc in self.docs]
+            return [nltk.tokenize.word_tokenize(doc) for doc in self.docs[:10]]
         except FileExistsError:
-            with open("data/feedback.json",'r') as data:
-                a=json.load(data)
-        docs=[d+a[d] if d in a.keys() else d for d in self.docs]
+            with open("data/feedback.json", 'r') as data:
+                a = json.load(data)
+        docs = [d + a[d] if d in a.keys() else d for d in self.docs]
         tokenized = [nltk.tokenize.word_tokenize(doc) for doc in docs]
         return tokenized
-    
+
     def remove_noise_nltk(self, tokenized_docs):
-        return  [[word.lower() for word in doc if word.isalpha()] for doc in tokenized_docs]
-    
+        """
+        Removes noise (non-alphabetic characters) from the tokenized documents.
+
+        Args:
+            tokenized_docs (list): A list of tokenized documents.
+
+        Returns:
+            list: A list of cleaned tokenized documents.
+        """
+        return [[word.lower() for word in doc if word.isalpha()] for doc in tokenized_docs]
+
     def remove_stopwords(self, tokenized_docs):
+        """
+        Removes stopwords from the tokenized documents.
+
+        Args:
+            tokenized_docs (list): A list of tokenized documents.
+
+        Returns:
+            list: A list of tokenized documents without stopwords.
+        """
         stop_words = set(nltk.corpus.stopwords.words('english'))
         return [
             [word for word in doc if word not in stop_words] for doc in tokenized_docs
         ]
-    
+
     def morphological_reduction_nltk(self, tokenized_docs, use_lemmatization=True):
+        """
+        Performs morphological reduction on the tokenized documents using NLTK's lemmatizer or stemmer.
+
+        Args:
+            tokenized_docs (list): A list of tokenized documents.
+            use_lemmatization (bool, optional): Whether to use lemmatization. Defaults to True.
+
+        Returns:
+            list: A list of morphologically reduced tokenized documents.
+        """
         if use_lemmatization:
             lemmatizer = nltk.stem.WordNetLemmatizer()
             tokenized_docs = [
@@ -58,6 +121,17 @@ class TextProcessor:
         return tokenized_docs
 
     def filter_tokens_by_occurrence(self, tokenized_docs, no_below=5, no_above=0.5):
+        """
+        Filters tokens based on their occurrence in documents.
+
+        Args:
+            tokenized_docs (list): A list of tokenized documents.
+            no_below (int, optional): Minimum document frequency for tokens to be included. Defaults to 5.
+            no_above (float, optional): Maximum document frequency (proportion of documents) for tokens to be included. Defaults to 0.5.
+
+        Returns:
+            list: A list of filtered tokenized documents.
+        """
         if not self.dictionary:
             self.dictionary = gensim.corpora.Dictionary(tokenized_docs)
             self.dictionary.filter_extremes(no_below=no_below, no_above=no_above)
@@ -66,8 +140,19 @@ class TextProcessor:
             [word for word in doc if word in filtered_words]
             for doc in tokenized_docs
         ]
-    
+
     def vector_representation(self, tokenized_docs, dictionary, use_bow=True):
+        """
+        Generates vector representation of documents using bag-of-words or TF-IDF.
+
+        Args:
+            tokenized_docs (list): A list of tokenized documents.
+            dictionary (gensim.corpora.Dictionary): A dictionary mapping tokens to unique integer ids.
+            use_bow (bool, optional): Whether to use bag-of-words representation. Defaults to True.
+
+        Returns:
+            list: A list of vector representations of documents.
+        """
         if not self.corpus:
             self.corpus = [dictionary.doc2bow(doc) for doc in tokenized_docs]
 
@@ -78,19 +163,30 @@ class TextProcessor:
             vector_repr = [tfidf[doc] for doc in self.corpus]
 
         return vector_repr
-    
-    def generate_independets_vectors(self):
-        # Genera un vector inicial con 1 en la primera posición y 0 en el resto
-        vector_inicial = [1] + [0] * (len(self.vector_repr) - 1)
-        
-        # Genera la lista de vectores rotando el 1 a través de ellos
-        lista_de_vectores = [vector_inicial[-i:] + vector_inicial[:-i] for i in range(len(self.vector_repr))]
-        
-        return np.array(lista_de_vectores)
-    
-    def generalize(self, vectors_weight, query=False):
-        c = [[0] * len(self.vector_repr) for _ in range(len(self.vocabulary))]
 
+    def generate_independets_vectors(self):
+        """
+        Generates independent vectors for documents.
+
+        Returns:
+            numpy.ndarray: Array of independent vectors.
+        """
+        vector_inicial = [1] + [0] * (len(self.vector_repr) - 1)
+        lista_de_vectores = [vector_inicial[-i:] + vector_inicial[:-i] for i in range(len(self.vector_repr))]
+        return np.array(lista_de_vectores)
+
+    def generalize(self, vectors_weight, query=False):
+        """
+        Generalizes document vectors based on their weights.
+
+        Args:
+            vectors_weight (list): A list of document vectors with weights.
+            query (bool, optional): Whether the vectors correspond to a query. Defaults to False.
+
+        Returns:
+            list: A list of generalized vectors.
+        """
+        c = [[0] * len(self.vector_repr) for _ in range(len(self.vocabulary))]
         vectors = self.generate_independets_vectors()
 
         for i, k in zip(self.vector_repr, range(len(self.vector_repr))):
@@ -101,37 +197,41 @@ class TextProcessor:
         k = 0
         for i in c:
             c_big = 0
-            for j,v in zip(i,vectors):
+            for j, v in zip(i, vectors):
                 k = k + j * v
                 c_big += j ** 2
-            k_i.append((k/math.sqrt(c_big)).tolist())
+            k_i.append((k / math.sqrt(c_big)).tolist())
             k = 0
             c_big = 0
 
         new_vectors = []
         
         if query:
-            for vector in (vectors_weight):
+            for vector in vectors_weight:
                 new_weight = 0
-                for token in k_i[vector[0]]:  
-                    new_weight += vector[1] * token          
+                for token in k_i[vector[0]]:
+                    new_weight += vector[1] * token
                 new_vectors.append((vector[0], new_weight))
-            
         else:    
             for doc in range(len(vectors_weight)):
+                new_tuple = []
+                new_weight = 0
                 for vector in vectors_weight[doc]:
-                    new_tuple = []
-                    new_weight = 0
                     for doc in range(len(vectors_weight)):
                         new_weight += k_i[vector[0]][doc] * vector[1]
                     new_tuple.append((vector[0], new_weight))
                 new_vectors.append(new_tuple)
-        print(new_vectors)
         return new_vectors
 
-
     def query_processor(self, query, use_bow=True):
-        self.current_query=query
+        """
+        Processes a query for information retrieval.
+
+        Args:
+            query (str): The query string.
+            use_bow (bool, optional): Whether to use bag-of-words representation. Defaults to True.
+        """
+        self.current_query = query
         self.save(query)
         self.query_processed = Query(query)
         self.query_processed.process_query()
@@ -150,56 +250,76 @@ class TextProcessor:
         self.query_processed.vector_repr = self.generalize(self.query_processed.vector_repr, query=True)
 
     def similarity(self):
-        #Find matched documents based on the query
+        """
+        Calculates similarity between documents and the query.
+
+        Returns:
+            map: A map of document indices to their similarity scores.
+        """
         index = gensim.similarities.MatrixSimilarity(self.vector_repr)
                 
         similarities = index[self.query_processed.vector_repr]
         top_matches = sorted(enumerate(similarities), key=lambda x: -(x[1]))
-        best_match_indices = [match[0] for match in top_matches if match[1]<1e-8]
-        return map(lambda x: self.docs[x],best_match_indices)
+        best_match_indices = [match[0] for match in top_matches if match[1] < 1e-8]
+        return map(lambda x: self.docs[x], best_match_indices)
     
-    def feedback(self,document):
-        a=dict()
+    def feedback(self, document):
+        """
+        Provides feedback for document relevance.
+
+        Args:
+            document (str): The relevant document.
+        """
+        a = dict()
         try:
             with open('data/feedback.json', 'x') as json_file:
-                json.dump({document:self.current_query}, json_file)
+                json.dump({document: self.current_query}, json_file)
             return
         except FileExistsError:
-            with open("data/feedback.json",'r') as data:
-                a=json.load(data)
+            with open("data/feedback.json", 'r') as data:
+                a = json.load(data)
         if document in a:
-            a[document]+='\n'+self.current_query
+            a[document] += '\n' + self.current_query
         else:
-            a[document]=self.current_query
-        with open('data/feedback.json','w') as data:
-            json.dump(a,data)
+            a[document] = self.current_query
+        with open('data/feedback.json', 'w') as data:
+            json.dump(a, data)
     
-    def save(self,query):
-        a=''
+    def save(self, query):
+        """
+        Saves the query.
+
+        Args:
+            query (str): The query to be saved.
+        """
+        a = ''
         try:
             with open('data/recomendation.json', 'x') as json_file:
                 json.dump(query, json_file)
             return
         except FileExistsError:
-            with open("data/recomendation.json",'r') as data:
-                a=json.load(data)
-        a+=' '+query
-        with open('data/recomendation.json','w') as data:
-            json.dump(a,data)
+            with open("data/recomendation.json", 'r') as data:
+                a = json.load(data)
+        a += ' ' + query
+        with open('data/recomendation.json', 'w') as data:
+            json.dump(a, data)
     
     def recomend(self):
-        a=''
+        """
+        Provides recommendations based on previous queries.
+
+        Returns:
+            list: A list of recommended documents.
+        """
+        a = ''
         try:
             with open('data/recomendation.json', 'x') as json_file:
                 json.dump("", json_file)
             return self.docs
         except:
-            a=''
-        with open("data/recomendation.json",'r') as data:
-            a=json.load(data)
-        tp=TextProcessor()
+            a = ''
+        with open("data/recomendation.json", 'r') as data:
+            a = json.load(data)
+        tp = TextProcessor()
         tp.query_processor(a)
         return tp.similarity()
-    
-
-proc = TextProcessor()
